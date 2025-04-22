@@ -1,7 +1,7 @@
 // services/CalendarService.js
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } = require('discord.js');
 const { DateTime } = require('luxon');
-const { logger } = require('../index');
+const logger = require('../utils/logger');
 
 class CalendarService {
     constructor(client) {

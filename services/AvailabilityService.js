@@ -1,7 +1,7 @@
 // services/AvailabilityService.js
 const { DateTime } = require('luxon');
 const chrono = require('chrono-node');
-const { logger } = require('../index');
+const logger = require('../utils/logger');
 
 class AvailabilityService {
     constructor() {

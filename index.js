@@ -1,29 +1,13 @@
 // Main Discord Calendar Bot File
 const { Client, GatewayIntentBits } = require('discord.js');
-const winston = require('winston');
 require('dotenv').config();
 
+const logger = require('./utils/logger');
 const CalendarService = require('./services/CalendarService');
 const AvailabilityService = require('./services/AvailabilityService');
 const CommandHandler = require('./handlers/CommandHandler');
 const InteractionHandler = require('./handlers/InteractionHandler');
 const MessageHandler = require('./handlers/MessageHandler');
-
-// Logger configuration
-const logger = winston.createLogger({
-    level: 'info',
-    format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.printf(({ timestamp, level, message, ...meta }) => {
-            return `${timestamp} [${level}]: ${message} ${Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ''}`;
-        })
-    ),
-    transports: [
-        new winston.transports.File({ filename: 'error.log', level: 'error' }),
-        new winston.transports.File({ filename: 'combined.log' }),
-        new winston.transports.Console()
-    ]
-});
 
 class DiscordCalendarBot {
     constructor(config) {
@@ -104,9 +88,6 @@ const config = {
     clientId: process.env.CLIENT_ID || require('./config.json').clientId,
     guildId: process.env.GUILD_ID || require('./config.json').guildId
 };
-
-// Export logger for use in other modules
-module.exports.logger = logger;
 
 // Start bot with error handling
 try {

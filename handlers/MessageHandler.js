@@ -1,5 +1,5 @@
 // handlers/MessageHandler.js
-const { logger } = require('../index');
+const logger = require('../utils/logger');
 
 class MessageHandler {
     constructor(client, calendarService, availabilityService) {

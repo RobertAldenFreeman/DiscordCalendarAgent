@@ -1,6 +1,6 @@
 // handlers/CommandHandler.js
 const { REST, Routes } = require('discord.js');
-const { logger } = require('../index');
+const logger = require('../utils/logger');
 
 class CommandHandler {
     constructor(client, calendarService, availabilityService) {

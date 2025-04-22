@@ -1,6 +1,6 @@
 // handlers/InteractionHandler.js
-const { logger } = require('../index');
 const { DateTime } = require('luxon');
+const logger = require('../utils/logger');
 
 class InteractionHandler {
     constructor(client, calendarService, availabilityService) {
