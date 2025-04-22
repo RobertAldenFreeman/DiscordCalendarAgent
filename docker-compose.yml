@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  discord-bot:
+    build: .
+    container_name: discord-calendar-bot
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./logs:/usr/src/app/logs
+      - ./config.json:/usr/src/app/config.json:ro
+    environment:
+      - NODE_ENV=production
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('./utils/healthcheck.js')()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
