@@ -1,18 +1,19 @@
 {
   "name": "discord-calendar-bot",
-  "version": "1.0.0",
-  "description": "Discord bot that creates a dynamic calendar from channel messages",
+  "version": "2.0.0",
+  "description": "Discord bot with interactive hourly calendar and availability tracking",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "create-dirs": "mkdir -p services handlers"
   },
   "dependencies": {
-    "chrono-node": "^2.7.6",
     "discord.js": "^14.14.1",
-    "dotenv": "^16.4.5",
     "luxon": "^3.4.4",
-    "winston": "^3.14.2"
+    "chrono-node": "^2.7.6",
+    "winston": "^3.14.2",
+    "dotenv": "^16.4.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
