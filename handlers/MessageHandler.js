@@ -1,5 +1,6 @@
 // handlers/MessageHandler.js
 const logger = require('../utils/logger');
+const { DateTime } = require('luxon');
 
 class MessageHandler {
     constructor(client, calendarService, availabilityService) {
@@ -27,7 +28,11 @@ class MessageHandler {
             this.availabilityService.extractAvailability(message);
             
             // Update calendar if one is displayed
-            await this.calendarService.updateCalendarDisplay(message.channel, this.availabilityService);
+            const guildId = message.guild?.id;
+            if (guildId) {
+                const channel = message.channel;
+                await this.calendarService.updateCalendarDisplay(channel, this.availabilityService);
+            }
         }
     }
     
@@ -42,7 +47,10 @@ class MessageHandler {
             this.availabilityService.extractAvailability(newMessage);
             
             // Update calendar if displayed
-            await this.calendarService.updateCalendarDisplay(newMessage.channel, this.availabilityService);
+            const guildId = newMessage.guild?.id;
+            if (guildId) {
+                await this.calendarService.updateCalendarDisplay(newMessage.channel, this.availabilityService);
+            }
         } catch (error) {
             logger.error('Error handling message update:', { 
                 error: error.message, 
@@ -59,7 +67,10 @@ class MessageHandler {
             this.availabilityService.removeAvailability(message);
             
             // Update calendar if displayed
-            await this.calendarService.updateCalendarDisplay(message.channel, this.availabilityService);
+            const guildId = message.guild?.id;
+            if (guildId) {
+                await this.calendarService.updateCalendarDisplay(message.channel, this.availabilityService);
+            }
         } catch (error) {
             logger.error('Error handling message delete:', { 
                 error: error.message, 
@@ -70,15 +81,14 @@ class MessageHandler {
     
     async handleTextCalendarCommand(message) {
         try {
-            // Clear existing data for this channel
-            this.availabilityService.clearChannelData(message.channel.id);
-            
             // Fetch and process messages
             const messages = await this.fetchChannelMessages(message.channel);
+            
+            // Process messages to extract availability information
             messages.forEach(msg => this.availabilityService.extractAvailability(msg));
             
-            // Display hourly calendar
-            await this.calendarService.displayHourlyCalendar(message.channel, this.availabilityService);
+            // Display weekly calendar (now the default view)
+            await this.calendarService.displayCalendar(message.channel, this.availabilityService);
         } catch (error) {
             logger.error('Error processing text calendar command:', { 
                 error: error.message, 
@@ -89,7 +99,7 @@ class MessageHandler {
     }
     
     async fetchChannelMessages(channel) {
-        const oneWeekAgo = require('luxon').DateTime.now().minus({ weeks: 1 });
+        const oneWeekAgo = DateTime.now().minus({ weeks: 1 });
         let messages = [];
         let lastId = null;
         
@@ -101,7 +111,7 @@ class MessageHandler {
             
             const fetchedMessages = await channel.messages.fetch(options);
             const relevantMessages = fetchedMessages.filter(msg => {
-                const msgTime = require('luxon').DateTime.fromMillis(msg.createdTimestamp);
+                const msgTime = DateTime.fromMillis(msg.createdTimestamp);
                 return msgTime > oneWeekAgo && !msg.author.bot;
             });
             

@@ -1,6 +1,7 @@
 // handlers/CommandHandler.js
 const { REST, Routes } = require('discord.js');
 const logger = require('../utils/logger');
+const { DateTime } = require('luxon');
 
 class CommandHandler {
     constructor(client, calendarService, availabilityService) {
@@ -20,12 +21,12 @@ class CommandHandler {
         const rest = new REST({ version: '10' }).setToken(token);
         
         try {
-            logger.info('Registering slash commands...');
+            logger.info('Registering slash commands globally...');
             await rest.put(
                 Routes.applicationCommands(this.client.user.id),
                 { body: commands }
             );
-            logger.info('Successfully registered slash commands');
+            logger.info('Successfully registered global slash commands');
         } catch (error) {
             logger.error('Error registering slash commands:', { 
                 error: error.message, 
@@ -47,15 +48,14 @@ class CommandHandler {
         try {
             const channel = await this.client.channels.fetch(interaction.channelId);
             
-            // Clear existing data for this channel
-            this.availabilityService.clearChannelData(channel.id);
-            
             // Fetch and process messages
             const messages = await this.fetchChannelMessages(channel);
+            
+            // Process messages to extract availability information
             messages.forEach(msg => this.availabilityService.extractAvailability(msg));
             
-            // Display hourly calendar
-            await this.calendarService.displayHourlyCalendar(channel, this.availabilityService);
+            // Display weekly calendar (now the default view)
+            await this.calendarService.displayCalendar(channel, this.availabilityService);
             
             await interaction.deleteReply();
         } catch (error) {
@@ -72,7 +72,7 @@ class CommandHandler {
     }
     
     async fetchChannelMessages(channel) {
-        const oneWeekAgo = require('luxon').DateTime.now().minus({ weeks: 1 });
+        const oneWeekAgo = DateTime.now().minus({ weeks: 1 });
         let messages = [];
         let lastId = null;
         
@@ -84,7 +84,7 @@ class CommandHandler {
             
             const fetchedMessages = await channel.messages.fetch(options);
             const relevantMessages = fetchedMessages.filter(msg => {
-                const msgTime = require('luxon').DateTime.fromMillis(msg.createdTimestamp);
+                const msgTime = DateTime.fromMillis(msg.createdTimestamp);
                 return msgTime > oneWeekAgo && !msg.author.bot;
             });
             

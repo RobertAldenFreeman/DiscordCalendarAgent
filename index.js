@@ -21,9 +21,12 @@ class DiscordCalendarBot {
             ]
         });
         
-        // Initialize services
+        // Initialize services with per-guild storage
         this.calendarService = new CalendarService(this.client);
         this.availabilityService = new AvailabilityService();
+        
+        // Make calendar service globally accessible so AvailabilityService can notify it
+        global.calendarService = this.calendarService;
         
         // Initialize handlers
         this.commandHandler = new CommandHandler(this.client, this.calendarService, this.availabilityService);
@@ -47,8 +50,24 @@ class DiscordCalendarBot {
     setupEventHandlers() {
         this.client.on('ready', async () => {
             logger.info(`Logged in as ${this.client.user.tag}`);
+            logger.info(`Bot is in ${this.client.guilds.cache.size} servers`);
+            
+            // Register slash commands globally
             await this.commandHandler.registerSlashCommands(this.config.token);
-            this.client.user.setActivity('availability | /calendar', { type: 3 });
+            
+            this.client.user.setActivity(`calendars in ${this.client.guilds.cache.size} servers | /calendar`, { type: 3 });
+        });
+        
+        // Log when bot joins a new server
+        this.client.on('guildCreate', guild => {
+            logger.info(`Joined new server: ${guild.name} (ID: ${guild.id})`);
+            this.client.user.setActivity(`calendars in ${this.client.guilds.cache.size} servers | /calendar`, { type: 3 });
+        });
+        
+        // Log when bot is removed from a server
+        this.client.on('guildDelete', guild => {
+            logger.info(`Removed from server: ${guild.name} (ID: ${guild.id})`);
+            this.client.user.setActivity(`calendars in ${this.client.guilds.cache.size} servers | /calendar`, { type: 3 });
         });
         
         // Handle interactions (slash commands, buttons, selects)
@@ -82,11 +101,11 @@ class DiscordCalendarBot {
     }
 }
 
-// Load configuration
+// Load configuration - NO GUILD ID NEEDED FOR MULTI-SERVER
 const config = {
     token: process.env.DISCORD_TOKEN || require('./config.json').token,
-    clientId: process.env.CLIENT_ID || require('./config.json').clientId,
-    guildId: process.env.GUILD_ID || require('./config.json').guildId
+    clientId: process.env.CLIENT_ID || require('./config.json').clientId
+    // Remove guildId - not needed for multi-server bot
 };
 
 // Start bot with error handling
